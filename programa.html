@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Programa do Curso | RSMA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="bg-slate-50 flex flex-col md:flex-row min-h-screen font-sans text-slate-900">
+    
+    <aside class="w-full md:w-80 bg-slate-900 text-white p-10 flex flex-col md:fixed md:h-full">
+        <h2 class="text-blue-400 font-bold uppercase tracking-widest text-[10px] mb-4">Currículo Ativo</h2>
+        <h1 class="text-3xl font-black mb-10">EDIÇÃO <span id="anoDisplay" class="text-blue-500">2026</span></h1>
+        
+        <nav class="space-y-6 flex-1">
+            <a href="Plano-Temático.pdf" target="_blank" class="block p-4 border border-slate-700 rounded-xl hover:bg-slate-800 transition text-center font-bold text-white shadow-sm">
+                📄 Plano Temático PDF
+            </a>
+            <a href="dashboard.html" class="block text-sm text-slate-400 hover:text-white transition font-medium">← Voltar às Edições</a>
+        </nav>
+    </aside>
+
+    <div class="hidden md:block w-80"></div>
+
+    <main class="flex-1 p-8 md:p-16 overflow-y-auto">
+        <div class="max-w-4xl mx-auto">
+            <header class="mb-12 border-b border-slate-200 pb-8">
+                <h2 class="text-4xl font-black text-slate-900 mb-2">Temas da disciplina</h2>
+                <p class="text-slate-500 noitalic"> Encontre todos o materiais da disciplina de Fisica aqui depositados.</p>
+            </header>
+            
+            <div id="lista-temas" class="space-y-12 mb-20"></div>
+
+            <header class="mb-12 border-b border-slate-200 pb-8">
+                <h2 class="text-4xl font-black text-slate-900 mb-2">Aulas de Laboratório</h2>
+                <p class="text-slate-500 noitalic">Guia de experiências e relatórios laboratoriais.</p>
+            </header>
+            <div id="lista-laboratorios" class="space-y-12"></div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAdbnKl5fYEh81h1bASGyuG0jzI",
+            authDomain: "syrma-y.firebaseapp.com",
+            projectId: "syrma-aemy",
+            storageBucket: "syrma-academy.firebasestorage.app",
+            messagingSenderId: "346936875689",
+            appId: "1:346936875689:web:5fe3bb4c068d935197e7b8",
+            measurementId: "G-3PDYYJ97VE"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        const materiais = [
+            { titulo: "Tema 1. Introducao (Analise vetorial: Ferramentas Matematicas para Fısica).", teoria: "temas/Tema-1/Tema-1(teoria).pdf", slides: "temas/Tema-1/Tema-1(slides).pdf", pratica: "temas/Tema-1/Tema-1(pratica).pdf", exercicio: "#" },
+            { titulo: "Tema 2. Leis de movimento.", teoria: "temas/Tema-2/Tema-2(teoria).pdf", slides: "temas/Tema-2/Tema-2(slides).pdf", pratica: "temas/Tema-2/Tema-2(pratica).pdf", exercicio: "#" },
+            { titulo: "Tema 3. Dinamica de massas pontuais.", teoria: "temas/Tema-3/Tema-3(teoria).pdf", slides: "temas/Tema-3/Tema-3(slides).pdf", pratica: "temas/Tema-3/Tema-3(pratica).pdf", exercicio: "#" },
+            { titulo: "Tema 4. Trabalho e energia.", teoria: "temas/Tema-4/Tema-4(teoria).pdf", slides: "temas/Tema-4/Tema-4(slides).pdf", pratica: "temas/Tema-4/Tema-4(pratica).pdf", exercicio: "#" },
+            { titulo: "Tema 5. Estatica e dinamica de corpos rıgidos.", teoria: "temas/Tema-5/Tema-5(teoria).pdf", slides: "temas/Tema-5/Tema-5(slides).pdf", pratica: "temas/Tema-5/Tema-5(paratica).pdf", exercicio: "#" },
+            { titulo: "Tema 6. Estatica e dinamica de fluidos.", teoria: "temas/Tema-6/Tema-6(teoria).pdf", slides: "temas/Tema-6/Tema-6(slides).pdf", pratica: "temas/Tema-6/Tema-6(pratica).pdf", exercicio: "#" },
+            { titulo: "Tema 7. Teoria de gases.", teoria: "temas/Tema-7/Tema-7(teoria).pdf", slides: "temas/Tema-7/Tema-7(slides).pdf", pratica: "temas/Tema-7/Tema-7(pratica).pdf", exercicio: "#" },
+            { titulo: "Tema 8. Termodinamica.", teoria: "temas/Tema-7/Tema-7(teoria).pdf", slides: "temas/Tema-7/Tema-7(slides).pdf", pratica: "temas/Tema-8/Tema-8(pratica).pdf", exercicio: "#" },
+            { titulo: "Tema 9. Elementos de Bioesfera.", teoria: "temas/Tema-7/Tema-7(teoria).pdf", slides: "temas/Tema-7/Tema-7(slides).pdf", pratica: "temas/Tema-9/Tema-9(pratica).pdf", exercicio: "#" }
+        ];
+
+        // Nova lista de laboratórios
+        const laboratorios = [
+            { titulo: "Experiência 1: Medições e Erros Experimentais", guia: "labs/lab1.pdf" },
+            { titulo: "Experiência 2: Queda Livre e Movimento Parabólico", guia: "labs/lab2.pdf" },
+            { titulo: "Experiência 3: Segunda Lei de Newton", guia: "labs/lab3.pdf" },
+            { titulo: "Experiência 4: Conservação da Energia Mecânica", guia: "labs/lab4.pdf" },
+            { titulo: "Experiência 5: Estática e Equilíbrio de Rotação", guia: "labs/lab5.pdf" }
+        ];
+
+        // Imprimir Temas
+        const containerTemas = document.getElementById('lista-temas');
+        materiais.forEach((m, index) => {
+            const card = document.createElement('section');
+            card.className = "group bg-white p-8 rounded-3xl border border-slate-100 shadow-sm transition-all hover:shadow-md";
+            card.innerHTML = `
+                <div class="flex items-center gap-6 mb-4">
+                    <span class="text-5xl font-black text-slate-100 group-hover:text-blue-100 transition-colors">0${index + 1}</span>
+                    <h3 class="text-2xl font-bold text-slate-800">${m.titulo}</h3>
+                </div>
+                <div class="flex flex-wrap gap-4 pl-16">
+                    <a href="${m.teoria}" target="_blank" class="px-5 py-2.5 bg-slate-100 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-slate-800 hover:text-white transition">📖 Teoria</a>
+                    <a href="${m.slides}" target="_blank" class="px-5 py-2.5 bg-slate-100 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-slate-800 hover:text-white transition">📊 Slides</a>
+                    <a href="${m.pratica}" target="_blank" class="px-5 py-2.5 bg-slate-100 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-slate-800 hover:text-white transition">📚 Prática</a>
+                    <button onclick="finalizarModulo('tema${index + 1}')" class="px-5 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-blue-700 transition shadow-lg shadow-blue-200">📝 Concluir Módulo</button>
+                </div>`;
+            containerTemas.appendChild(card);
+        });
+
+        // Imprimir Laboratórios
+        const containerLabs = document.getElementById('lista-laboratorios');
+        laboratorios.forEach((lab, index) => {
+            const card = document.createElement('section');
+            card.className = "group bg-white p-8 rounded-3xl border border-blue-50 shadow-sm transition-all hover:shadow-md border-l-4 border-l-blue-500";
+            card.innerHTML = `
+                <div class="flex items-center gap-6 mb-4">
+                    <span class="text-5xl font-black text-slate-100 group-hover:text-blue-100 transition-colors">L${index + 1}</span>
+                    <h3 class="text-2xl font-bold text-slate-800">${lab.titulo}</h3>
+                </div>
+                <div class="flex flex-wrap gap-4 pl-16">
+                    <a href="${lab.guia}" target="_blank" class="px-5 py-2.5 bg-blue-50 text-blue-700 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-blue-600 hover:text-white transition">🔬 Ver Guia de Laboratório</a>
+                </div>`;
+            containerLabs.appendChild(card);
+        });
+
+        window.finalizarModulo = async (id) => {
+            let progresso = JSON.parse(localStorage.getItem('progresso_aluno')) || {};
+            progresso[id] = true;
+            localStorage.setItem('progresso_aluno', JSON.stringify(progresso));
+            const totalConcluidos = Object.keys(progresso).length;
+            if (totalConcluidos >= 7) {
+                const user = auth.currentUser;
+                try {
+                    await addDoc(collection(db, "conclusoes"), {
+                        nome: user ? user.displayName : "Investigador",
+                        email: user ? user.email : "N/A",
+                        data: new Date().toLocaleString(),
+                        status: "pendente",
+                        timestamp: serverTimestamp()
+                    });
+                    Swal.fire({ title: 'Curso Completo!', text: 'O seu progresso foi enviado.', icon: 'success' });
+                } catch (e) { console.error(e); }
+            } else {
+                Swal.fire({ title: 'Módulo Concluído!', text: `Faltam ${7 - totalConcluidos} módulos.`, icon: 'info', timer: 2000 });
+            }
+        };
+
+        const params = new URLSearchParams(window.location.search);
+        document.getElementById('anoDisplay').innerText = params.get('ano') || '2026';
+    </script>
+</body>
+</html>

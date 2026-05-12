@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel de Edições | Fisica</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen">
+    <header class="bg-white border-b py-6 px-12 flex justify-between items-center">
+        <h1 class="text-xl font-black text-slate-900 tracking-widest">Aulas de <span class="text-blue-600">Fisica UEM</span></h1>
+        <button id="btnSair" class="text-sm font-bold text-red-500">Sair com Segurança</button>
+    </header>
+
+    <main class="max-w-6xl mx-auto py-16 px-6">
+        <div class="mb-12">
+            <h2 class="text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">Edições das Aulas</h2>
+            <p class="text-slate-600 text-lg">Selecione o ano da edição que deseja frequentar.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <script>
+                const anos = [2026];
+                anos.forEach(ano => {
+                    document.write(`
+                        <a href="programa.html?ano=${ano}" class="block bg-white border border-slate-200 p-8 rounded-3xl hover:border-blue-500 hover:shadow-2xl transition-all group">
+                            <span class="text-blue-600 font-black text-4xl mb-4 block group-hover:scale-110 transition-transform">${ano}</span>
+                            <h3 class="text-xl font-bold text-slate-800 mb-2 italic underline underline-offset-4 decoration-blue-200">Aulas Completas</h3>
+                            <p class="text-slate-500 text-sm mb-6 leading-relaxed">Acesso total ao plano temático, sessões teóricas e atividades laboratoriais de ${ano}.</p>
+                            <div class="flex items-center text-blue-600 font-bold gap-2 text-sm">
+                                ACEDER AOS MÓDULOS DAS AULAS <span>→</span>
+                            </div>
+                        </a>
+                    `);
+                });
+            </script>
+        </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAdbnKl5xSyHjrvfYEh81h1bASGyuG0jzI",
+            authDomain: "syrma-academy.firebaseapp.com",
+            projectId: "syrma-academy",
+            storageBucket: "syrma-academy.firebasestorage.app",
+            messagingSenderId: "346936875689",
+            appId: "1:346936875689:web:5fe3bb4c068d935197e7b8",
+            measurementId: "G-3PDYYJ97VE" 
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        document.getElementById('btnSair').onclick = () => {
+            signOut(auth).then(() => { window.location.href = "index.html"; });
+        };
+    </script>
+</body>
+</html>

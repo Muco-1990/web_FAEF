@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Acesso Seguro | RSMA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-5xl w-full grid md:grid-cols-2 bg-white rounded-3xl shadow-2xl overflow-hidden">
+        <div class="p-12">
+            <h2 class="text-3xl font-bold text-slate-800 mb-2">Bem-vindo de volta</h2>
+            <p class="text-slate-500 mb-8 font-medium">Insira as suas credenciais para aceder.</p>
+            <form id="loginForm" class="space-y-5">
+                <input type="email" id="lEmail" placeholder="E-mail Institucional" class="w-full p-4 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition" required>
+                <input type="password" id="lPass" placeholder="Palavra-passe" class="w-full p-4 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition" required>
+                <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold text-lg hover:bg-black transition">Entrar Agora</button>
+            </form>
+        </div>
+        <div class="p-12 bg-blue-50 border-l border-blue-100">
+            <h2 class="text-3xl font-bold text-slate-800 mb-2">Criar Conta</h2>
+            <p class="text-slate-500 mb-8 font-medium">Registe-se para as edições das aulas.</p>
+            <form id="registerForm" class="space-y-4">
+                <input type="text" id="rNome" placeholder="Nome Completo" class="w-full p-4 border rounded-xl outline-none bg-white shadow-sm" required>
+                <input type="email" id="rEmail" placeholder="E-mail" class="w-full p-4 border rounded-xl outline-none bg-white shadow-sm" required>
+                <input type="password" id="rPass" placeholder="Definir Senha" class="w-full p-4 border rounded-xl outline-none bg-white shadow-sm" required>
+                <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition">Registar e Avançar</button>
+            </form>
+            <p class="mt-6 text-xs text-slate-400 text-center italic">Tratamos os seus dados com ética e confidencialidade.</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAdbnKl5xSyHjrvfYEh81h1bASGyuG0jzI",
+            authDomain: "syrma-academy.firebaseapp.com",
+            projectId: "syrma-academy",
+            storageBucket: "syrma-academy.firebasestorage.app",
+            messagingSenderId: "346936875689",
+            appId: "1:346936875689:web:5fe3bb4c068d935197e7b8",
+            measurementId: "G-3PDYYJ97VE"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Login
+        document.getElementById('loginForm').onsubmit = async (e) => {
+            e.preventDefault();
+            try {
+                await signInWithEmailAndPassword(auth, lEmail.value, lPass.value);
+                window.location.href = "dashboard.html";
+            } catch (error) { alert("Erro: " + error.message); }
+        };
+
+        // Registro
+        document.getElementById('registerForm').onsubmit = async (e) => {
+            e.preventDefault();
+            try {
+                const cred = await createUserWithEmailAndPassword(auth, rEmail.value, rPass.value);
+                await updateProfile(cred.user, { displayName: rNome.value });
+                window.location.href = "dashboard.html";
+            } catch (error) { alert("Erro: " + error.message); }
+        };
+    </script>
+</body>
+</html>

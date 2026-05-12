@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Admin | RSMA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body class="bg-slate-50 font-sans text-slate-900">
+    <div id="notificacaoContainer" class="fixed top-5 right-5 z-[100] w-80 space-y-4"></div>
+    <div class="flex min-h-screen">
+        <aside class="w-72 bg-slate-900 text-white p-8 hidden lg:flex flex-col sticky top-0 h-screen">
+            <h1 class="text-2xl font-black text-blue-500 tracking-tighter text-center mb-10">RSMA SYSTEM</h1>
+            <nav class="space-y-4 flex-1">
+                <div class="p-4 bg-blue-600 rounded-2xl shadow-lg shadow-blue-500/20">
+                    <p class="font-black">Modo Administrador</p>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="flex-1 p-8 lg:p-12">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                <div class="bg-indigo-600 p-6 rounded-3xl shadow-xl text-white">
+                    <p class="text-[10px] font-black uppercase">Pendentes</p>
+                    <h3 class="text-4xl font-black" id="contadorPendentes">0</h3>
+                </div>
+                <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                    <p class="text-[10px] font-black uppercase">Emitidos</p>
+                    <h3 class="text-4xl font-black" id="contadorEmitidos">1142</h3>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-[40px] shadow-2xl overflow-hidden">
+                <table class="w-full text-left">
+                    <thead><tr class="bg-slate-900 text-white text-[10px] uppercase font-bold"><th class="p-4">Investigador</th><th class="p-4">Data</th><th class="p-4">Ação</th></tr></thead>
+                    <tbody id="tabelaAprovacao" class="divide-y divide-slate-50">
+                        <tr id="emptyRow"><td colspan="3" class="p-10 text-center text-slate-300 italic">Fila vazia.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAdbnKl5xSyHjrvfYEh81h1bASGyuG0jzI",
+            authDomain: "syrma-academy.firebaseapp.com",
+            projectId: "syrma-academy",
+            storageBucket: "syrma-academy.firebasestorage.app",
+            messagingSenderId: "346936875689",
+            appId: "1:346936875689:web:5fe3bb4c068d935197e7b8",
+            measurementId: "G-3PDYYJ97VE" 
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const q = query(collection(db, "conclusoes"), where("status", "==", "pendente"));
+        
+        onSnapshot(q, (snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === "added") {
+                    const data = change.doc.data();
+                    const tabela = document.getElementById('tabelaAprovacao');
+                    const empty = document.getElementById('emptyRow');
+                    if (empty) empty.remove();
+
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50 transition";
+                    tr.innerHTML = `
+                        <td class="p-4 font-bold">${data.nome}</td>
+                        <td class="p-4 text-xs">${data.data}</td>
+                        <td class="p-4"><button onclick="aprovar('${data.nome}', this)" class="bg-green-600 text-white px-4 py-2 rounded-xl text-[10px] font-black">VALIDAR</button></td>
+                    `;
+                    tabela.prepend(tr);
+                    
+                    document.getElementById('contadorPendentes').innerText = snapshot.docs.length;
+                    
+                    // Notificação visual
+                    const toast = document.createElement('div');
+                    toast.className = "bg-white p-4 rounded-xl shadow-2xl border-l-4 border-blue-500 animate-bounce";
+                    toast.innerHTML = `<p class="text-xs font-bold">${data.nome} concluiu o curso!</p>`;
+                    document.getElementById('notificacaoContainer').appendChild(toast);
+                    setTimeout(() => toast.remove(), 5000);
+                }
+            });
+        });
+
+        window.aprovar = (nome, btn) => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'mm', 'a4');
+            doc.text("CERTIFICADO RSMA", 148, 80, {align: 'center'});
+            doc.text(nome, 148, 120, {align: 'center'});
+            doc.save(`Certificado_${nome}.pdf`);
+            btn.innerText = "EMITIDO";
+            btn.disabled = true;
+        };
+    </script>
+</body>
+</html>
